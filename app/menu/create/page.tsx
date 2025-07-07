@@ -20,6 +20,7 @@ export default function CreateMenuPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
 
   const [formData, setFormData] = useState({
     startDate: new Date().toISOString().split("T")[0], // Today's date
@@ -42,28 +43,36 @@ export default function CreateMenuPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("auth_token")
-      if (!token) {
+      try {
+        const token = localStorage.getItem("auth_token")
+        if (!token) {
+          router.push("/auth/login")
+          return
+        }
+
+        const currentUser = await authService.getCurrentUser(token)
+        if (!currentUser) {
+          localStorage.removeItem("auth_token")
+          router.push("/auth/login")
+          return
+        }
+
+        if (!currentUser.profileCompleted) {
+          router.push("/onboarding")
+          return
+        }
+
+        setUser(currentUser)
+      } catch (error) {
+        console.error("Auth check error:", error)
         router.push("/auth/login")
-        return
+      } finally {
+        setIsAuthLoading(false)
       }
-
-      const currentUser = await authService.getCurrentUser(token)
-      if (!currentUser) {
-        router.push("/auth/login")
-        return
-      }
-
-      if (!currentUser.profileCompleted) {
-        router.push("/onboarding")
-        return
-      }
-
-      setUser(currentUser)
     }
 
     checkAuth()
-  }, [])
+  }, [router])
 
   const handleMealToggle = (mealType: MealType, checked: boolean) => {
     if (checked) {
@@ -120,7 +129,7 @@ export default function CreateMenuPage() {
     }
   }
 
-  if (!user) {
+  if (isAuthLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
