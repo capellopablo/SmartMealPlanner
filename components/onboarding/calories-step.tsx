@@ -23,7 +23,7 @@ export default function CaloriesStep({ onComplete }: CaloriesStepProps) {
     if (calorieOption === "custom_limit") {
       const calories = Number.parseInt(customCalories)
       if (!calories || calories < 800 || calories > 5000) {
-        setError("Por favor ingresa una cantidad válida de calorías entre 800 y 5000")
+        setError("Please enter a valid calorie amount between 800 and 5000.")
         return
       }
 
@@ -60,10 +60,10 @@ export default function CaloriesStep({ onComplete }: CaloriesStepProps) {
             <RadioGroupItem value="no_limit" id="no_limit" className="mt-1" />
             <div className="flex-1">
               <Label htmlFor="no_limit" className="text-base font-medium cursor-pointer">
-                No pretendo setear un límite de calorías diario
+                I don't want to set a daily calorie limit
               </Label>
               <p className="text-sm text-gray-600 mt-1">
-                La aplicación generará recetas equilibradas en nutrientes sin un cálculo específico de calorías diarias
+                The application will generate nutritionally balanced recipes without a specific daily calorie count.
               </p>
             </div>
           </div>
@@ -72,9 +72,9 @@ export default function CaloriesStep({ onComplete }: CaloriesStepProps) {
             <RadioGroupItem value="custom_limit" id="custom_limit" className="mt-1" />
             <div className="flex-1">
               <Label htmlFor="custom_limit" className="text-base font-medium cursor-pointer">
-                Quiero setear un límite de calorías diarias
+                I want to set a daily calorie limit
               </Label>
-              <p className="text-sm text-gray-600 mt-1 mb-3">Estableceré mi propio límite diario de calorías</p>
+              <p className="text-sm text-gray-600 mt-1 mb-3">I will set my own daily calorie limit.</p>
               {calorieOption === "custom_limit" && (
                 <div className="mt-3">
                   <Label htmlFor="customCalories" className="text-sm">
@@ -95,15 +95,15 @@ export default function CaloriesStep({ onComplete }: CaloriesStepProps) {
         </RadioGroup>
 
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-          <h4 className="font-medium text-blue-900 mb-2">💡 Información importante</h4>
+          <h4 className="font-medium text-blue-900 mb-2">💡 Important Information</h4>
           <p className="text-sm text-blue-800">
-            Puedes cambiar esta configuración más adelante en tu perfil. Si no estableces un límite, nos enfocaremos en
-            crear comidas equilibradas y nutritivas.
+            You can change this setting later in your profile. If you don't set a limit, we will focus on creating
+            balanced and nutritious meals.
           </p>
         </div>
 
         <Button type="submit" className="w-full">
-          Completar Configuración
+          Complete Setup
         </Button>
       </form>
     </div>

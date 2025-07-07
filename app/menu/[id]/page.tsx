@@ -104,45 +104,45 @@ export default function MenuViewPage() {
 
   const getMealTypeLabel = (mealType: string) => {
     const labels: Record<string, string> = {
-      breakfast: "Desayuno",
-      lunch: "Almuerzo",
-      snack: "Merienda",
-      dinner: "Cena",
-    }
-    return labels[mealType] || mealType
-  }
+      breakfast: 'Breakfast',
+      lunch: 'Lunch',
+      snack: 'Snack',
+      dinner: 'Dinner',
+    };
+    return labels[mealType] || mealType;
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2">Cargando menú...</p>
+          <p className="mt-2">Loading menu...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!menu) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Menú no encontrado</p>
-          <Button onClick={() => router.push("/dashboard")} className="mt-4">
-            Volver al Dashboard
+          <p className="text-red-600">Menu not found</p>
+          <Button onClick={() => router.push('/dashboard')} className="mt-4">
+            Back to Dashboard
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => router.push("/dashboard")} className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => router.push('/dashboard')} className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Volver al Dashboard
+            Back to Dashboard
           </Button>
         </div>
 
@@ -157,29 +157,29 @@ export default function MenuViewPage() {
                 </CardDescription>
               </div>
               <Badge
-                className={menu.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
+                className={menu.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
               >
-                {menu.status === "active" ? "Activo" : "Pendiente"}
+                {menu.status === 'active' ? 'Active' : 'Pending'}
               </Badge>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <p className="font-medium">Días totales</p>
+                <p className="font-medium">Total Days</p>
                 <p className="text-gray-600">{menu.totalDays}</p>
               </div>
               <div>
-                <p className="font-medium">Comidas por día</p>
+                <p className="font-medium">Meals per Day</p>
                 <p className="text-gray-600">{menu.mealsPerDay.length}</p>
               </div>
               <div>
-                <p className="font-medium">Calorías máximas</p>
-                <p className="text-gray-600">{menu.maxCaloriesPerDay}/día</p>
+                <p className="font-medium">Max Calories</p>
+                <p className="text-gray-600">{menu.maxCaloriesPerDay}/day</p>
               </div>
               <div>
-                <p className="font-medium">Porciones</p>
-                <p className="text-gray-600">{menu.servingsPerMeal} por comida</p>
+                <p className="font-medium">Servings</p>
+                <p className="text-gray-600">{menu.servingsPerMeal} per meal</p>
               </div>
             </div>
           </CardContent>
@@ -193,17 +193,17 @@ export default function MenuViewPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg">
-                      Día {dayIndex + 1} -{" "}
-                      {day.date.toLocaleDateString("es-ES", { weekday: "long", month: "long", day: "numeric" })}
+                      Day {dayIndex + 1} -{' '}
+                      {day.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                     </CardTitle>
                     <CardDescription>
-                      {day.meals.length} comidas • {day.totalCalories} calorías totales
+                      {day.meals.length} meals • {day.totalCalories} total calories
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
                     {!day.expanded && (
                       <div className="text-sm text-gray-600">
-                        {day.meals.map((meal) => getMealTypeLabel(meal.mealType)).join(" • ")}
+                        {day.meals.map((meal) => getMealTypeLabel(meal.mealType)).join(' • ')}
                       </div>
                     )}
                     {day.expanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
@@ -231,11 +231,11 @@ export default function MenuViewPage() {
                               <div className="flex items-center gap-4 text-sm text-gray-500">
                                 <div className="flex items-center gap-1">
                                   <span className="font-medium">{meal.recipe.calories * meal.servings}</span>
-                                  <span>calorías</span>
+                                  <span>calories</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Users className="h-4 w-4" />
-                                  <span>{meal.servings} porción(es)</span>
+                                  <span>{meal.servings} serving(s)</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Clock className="h-4 w-4" />
@@ -255,20 +255,49 @@ export default function MenuViewPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 justify-center">
-          <Button
-            variant="outline"
-            onClick={handleRegenerateSelected}
-            disabled={selectedMealIds.length === 0 || isRegenerating}
-          >
-            {isRegenerating ? "Regenerando..." : `Regenerar Comidas Seleccionadas (${selectedMealIds.length})`}
-          </Button>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              {menu.status === 'pending' && (
+                <Button
+                  onClick={handleRegenerateSelected}
+                  disabled={selectedMealIds.length === 0 || isRegenerating}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  {isRegenerating ? 'Regenerating...' : `Regenerate Selected (${selectedMealIds.length})`}
+                </Button>
+              )}
 
-          <Button onClick={handleConfirmMenu} disabled={isConfirming}>
-            {isConfirming ? "Confirmando..." : "Confirmar Menú"}
-          </Button>
-        </div>
+              {menu.status === 'pending' && (
+                <Button onClick={() => setIsConfirming(true)} disabled={isConfirming} className="flex-1">
+                  {isConfirming ? 'Confirming...' : 'Confirm and Finalize Menu'}
+                </Button>
+              )}
+            </div>
+            {menu.status === 'active' && (
+              <p className="text-center text-sm text-gray-600">This menu is active and can no longer be modified.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {isConfirming && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle>Confirm Menu</CardTitle>
+                <CardDescription>Are you sure you want to finalize this menu? This action cannot be undone.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex justify-end gap-4">
+                <Button variant="ghost" onClick={() => setIsConfirming(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleConfirmMenu}>Confirm</Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

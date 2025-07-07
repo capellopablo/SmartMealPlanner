@@ -11,12 +11,43 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AuthService } from "@/modules/auth/services/auth-service"
 import { MenuGeneratorService } from "@/modules/menu-generator/services/menu-generator-service"
-import type { User } from "@/shared/types/user"
+import type { User, UserProfile } from "@/shared/types/user"
 import type { MealType, MenuGenerationRequest } from "@/shared/types/menu"
 import { ArrowLeft } from "lucide-react"
+import { UserProfileBuilder } from "@/modules/auth/services/user-profile-builder"
+
+const basePrompt = `Quiero que generes un plan de comidas personalizado para un usuario con las siguientes características de perfil y requerimientos de menú. Tu respuesta debe seguir una estructura estricta en formato JSON, como se indica más abajo.
+
+---
+
+### Datos del usuario:
+- Objetivo: [GOAL]
+- Tipo de dieta: [DIET_TYPE]
+- Restricciones alimenticias: [FOOD_RESTRICTIONS]
+- Exclusiones personales (ingredientes que NO deben aparecer en ninguna receta): [INGREDIENT_EXCLUSIONS]
+- Cantidad de porciones por comida: [SERVINGS]
+
+---
+
+### Parámetros del menú a generar:
+- Duración del menú: [TOTAL_DAYS días]
+- Comidas por día: [MEALS_PER_DAY]
+- Calorías máximas por día: [MAX_CALORIES]
+
+---
+
+### Instrucciones para la generación:
+
+1. Todas las recetas deben cumplir con las restricciones alimenticias indicadas.
+2. No incluyas ninguno de los ingredientes de la lista de exclusiones.
+3. El total de calorías de las comidas de cada día no debe superar el máximo de calorías diarias.
+4. Genera nombres de recetas creativos y apetitosos.
+5. Proporciona instrucciones claras y fáciles de seguir.
+6. La lista de ingredientes debe ser precisa.`
 
 export default function CreateMenuPage() {
   const [user, setUser] = useState<User | null>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -32,13 +63,14 @@ export default function CreateMenuPage() {
   const [selectedMeals, setSelectedMeals] = useState<MealType[]>(["breakfast", "lunch", "dinner"])
 
   const authService = new AuthService()
+  const profileBuilder = new UserProfileBuilder()
   const menuService = new MenuGeneratorService()
 
   const mealOptions = [
-    { value: "breakfast" as MealType, label: "Desayuno" },
-    { value: "lunch" as MealType, label: "Almuerzo" },
-    { value: "snack" as MealType, label: "Merienda" },
-    { value: "dinner" as MealType, label: "Cena" },
+    { value: "breakfast" as MealType, label: "Breakfast" },
+    { value: "lunch" as MealType, label: "Lunch" },
+    { value: "snack" as MealType, label: "Snack" },
+    { value: "dinner" as MealType, label: "Dinner" },
   ]
 
   useEffect(() => {
@@ -61,8 +93,11 @@ export default function CreateMenuPage() {
           router.push("/onboarding")
           return
         }
+        
+        const profile = await profileBuilder.getProfile(currentUser.id)
 
         setUser(currentUser)
+        setUserProfile(profile)
       } catch (error) {
         console.error("Auth check error:", error)
         router.push("/auth/login")
@@ -82,6 +117,22 @@ export default function CreateMenuPage() {
     }
   }
 
+  const generatePrompt = () => {
+    if (!userProfile) return null
+
+    let prompt = basePrompt
+    prompt = prompt.replace('[GOAL]', userProfile.goal || 'No especificado')
+    prompt = prompt.replace('[DIET_TYPE]', userProfile.dietType || 'Omnívora')
+    prompt = prompt.replace('[FOOD_RESTRICTIONS]', userProfile.restrictions.join(', ') || 'Ninguna')
+    prompt = prompt.replace('[INGREDIENT_EXCLUSIONS]', userProfile.dislikedIngredients.join(', ') || 'Ninguna')
+    prompt = prompt.replace('[SERVINGS]', formData.servings.toString())
+    prompt = prompt.replace('[TOTAL_DAYS]', formData.days.toString())
+    prompt = prompt.replace('[MEALS_PER_DAY]', selectedMeals.join(', '))
+    prompt = prompt.replace('[MAX_CALORIES]', formData.maxCaloriesPerDay.toString())
+
+    return prompt
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
@@ -92,24 +143,29 @@ export default function CreateMenuPage() {
     try {
       // Validation
       if (selectedMeals.length === 0) {
-        setError("Debes seleccionar al menos una comida por día")
+        setError("You must select at least one meal per day.")
         return
       }
 
       if (formData.days < 1 || formData.days > 30) {
-        setError("Los días deben estar entre 1 y 30")
+        setError("Days must be between 1 and 30.")
         return
       }
 
       if (formData.maxCaloriesPerDay < 800 || formData.maxCaloriesPerDay > 5000) {
-        setError("Las calorías diarias deben estar entre 800 y 5000")
+        setError("Daily calories must be between 800 and 5000.")
         return
       }
 
       if (formData.servings < 1 || formData.servings > 10) {
-        setError("Las porciones deben estar entre 1 y 10")
+        setError("Servings must be between 1 and 10.")
         return
       }
+
+      const finalPrompt = generatePrompt()
+      console.log('--- GENERATED PROMPT ---')
+      console.log(finalPrompt)
+      console.log('------------------------')
 
       const request: MenuGenerationRequest = {
         startDate: new Date(formData.startDate),
@@ -120,10 +176,10 @@ export default function CreateMenuPage() {
       }
 
       const menu = await menuService.generateMenu(user.id, request)
-      router.push(`/menu/${menu.id}`)
+      router.push(`/menu/${menu.id}?success=menu_created`)
     } catch (error) {
       console.error("Error creating menu:", error)
-      setError("Error al crear el menú. Por favor intenta de nuevo.")
+      setError("Failed to create menu. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -146,14 +202,14 @@ export default function CreateMenuPage() {
         <div className="mb-6">
           <Button variant="ghost" onClick={() => router.push("/dashboard")} className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Volver al Dashboard
+            Back to Dashboard
           </Button>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Crear Nuevo Menú</CardTitle>
-            <CardDescription>Configura tu menú personalizado según tus preferencias</CardDescription>
+            <CardTitle>Create New Menu</CardTitle>
+            <CardDescription>Configure your custom menu based on your preferences.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -165,7 +221,7 @@ export default function CreateMenuPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="startDate">Fecha de Inicio</Label>
+                  <Label htmlFor="startDate">Start Date</Label>
                   <Input
                     id="startDate"
                     type="date"
@@ -176,7 +232,7 @@ export default function CreateMenuPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="days">Número de Días</Label>
+                  <Label htmlFor="days">Number of Days</Label>
                   <Input
                     id="days"
                     type="number"
@@ -190,8 +246,8 @@ export default function CreateMenuPage() {
               </div>
 
               <div>
-                <Label className="text-base font-medium">Comidas por Día</Label>
-                <p className="text-sm text-gray-600 mb-3">Selecciona las comidas que quieres incluir en tu menú</p>
+                <Label className="text-base font-medium">Meals per Day</Label>
+                <p className="text-sm text-gray-600 mb-3">Select the meals you want to include in your menu.</p>
                 <div className="grid grid-cols-2 gap-3">
                   {mealOptions.map((meal) => (
                     <div key={meal.value} className="flex items-center space-x-2">
@@ -210,7 +266,7 @@ export default function CreateMenuPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="maxCalories">Calorías Máximas por Día</Label>
+                  <Label htmlFor="maxCalories">Max Calories per Day</Label>
                   <Input
                     id="maxCalories"
                     type="number"
@@ -225,7 +281,7 @@ export default function CreateMenuPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="servings">Porciones por Comida</Label>
+                  <Label htmlFor="servings">Servings per Meal</Label>
                   <Input
                     id="servings"
                     type="number"
@@ -239,17 +295,17 @@ export default function CreateMenuPage() {
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <h4 className="font-medium text-blue-900 mb-2">📋 Resumen</h4>
+                <h4 className="font-medium text-blue-900 mb-2">📋 Summary</h4>
                 <div className="text-sm text-blue-800 space-y-1">
-                  <p>• Menú de {formData.days} días</p>
-                  <p>• {selectedMeals.length} comidas por día</p>
-                  <p>• Máximo {formData.maxCaloriesPerDay} calorías diarias</p>
-                  <p>• {formData.servings} porción(es) por comida</p>
+                  <p>• {formData.days}-day menu</p>
+                  <p>• {selectedMeals.length} meals per day</p>
+                  <p>• Max {formData.maxCaloriesPerDay} calories per day</p>
+                  <p>• {formData.servings} serving(s) per meal</p>
                 </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Generando menú..." : "Generar Menú"}
+                {isLoading ? "Generating Menu..." : "Create Menu"}
               </Button>
             </form>
           </CardContent>

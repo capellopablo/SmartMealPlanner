@@ -61,7 +61,7 @@ export default function DashboardPage() {
     // Check for success notification
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.get("success") === "menu_created") {
-      setNotification("¡Menú creado con éxito!")
+      setNotification("Menu created successfully!")
       // Clear the URL parameter
       window.history.replaceState({}, document.title, window.location.pathname)
       // Clear notification after 5 seconds
@@ -81,11 +81,11 @@ export default function DashboardPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-800">Activo</Badge>
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">Pendiente</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
       case "completed":
-        return <Badge className="bg-gray-100 text-gray-800">Completado</Badge>
+        return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>
       default:
         return <Badge>{status}</Badge>
     }
@@ -191,7 +191,7 @@ export default function DashboardPage() {
         <div className="mb-8">
           <Button className="flex items-center gap-2" onClick={() => router.push("/menu/create")}>
             <Plus className="h-4 w-4" />
-            Crear Nuevo Menú
+            Create New Menu
           </Button>
         </div>
 
@@ -200,23 +200,23 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Menús Activos y Pendientes
+              Active & Pending Menus
             </CardTitle>
-            <CardDescription>Menús en uso actualmente o programados para días futuros</CardDescription>
+            <CardDescription>Menus currently in use or scheduled for future days.</CardDescription>
           </CardHeader>
           <CardContent>
             {activeMenus.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No tienes menús activos. ¡Crea tu primer menú!</p>
+              <p className="text-gray-500 text-center py-8">You have no active menus. Create your first one!</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Fecha Inicio</TableHead>
-                    <TableHead>Días</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Comidas/Día</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Start Date</TableHead>
+                    <TableHead>Days</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Meals/Day</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                       <TableCell>
                         <Link href={`/menu/${menu.id}`}>
                           <Button variant="outline" size="sm">
-                            Ver Detalles
+                            View Details
                           </Button>
                         </Link>
                       </TableCell>
@@ -247,35 +247,33 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Menús Completados
+              Completed Menus
             </CardTitle>
-            <CardDescription>Últimos 10 menús finalizados</CardDescription>
+            <CardDescription>A history of your past meal plans.</CardDescription>
           </CardHeader>
           <CardContent>
             {completedMenus.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No tienes menús completados aún.</p>
+              <p className="text-gray-500 text-center py-8">You haven't completed any menus yet.</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Fecha Inicio</TableHead>
-                    <TableHead>Días</TableHead>
-                    <TableHead>Completado</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>End Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {completedMenus.map((menu) => (
                     <TableRow key={menu.id}>
                       <TableCell className="font-medium">{menu.name}</TableCell>
-                      <TableCell>{menu.startDate.toLocaleDateString()}</TableCell>
-                      <TableCell>{menu.totalDays}</TableCell>
-                      <TableCell>{menu.updatedAt.toLocaleDateString()}</TableCell>
+                      <TableCell>{menu.endDate?.toLocaleDateString() || "N/A"}</TableCell>
+                      <TableCell>{getStatusBadge(menu.status)}</TableCell>
                       <TableCell>
                         <Link href={`/menu/${menu.id}`}>
                           <Button variant="outline" size="sm">
-                            Ver Detalles
+                            View Details
                           </Button>
                         </Link>
                       </TableCell>

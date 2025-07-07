@@ -79,15 +79,17 @@ export default function PreferencesStep({ onComplete }: PreferencesStepProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <RadioGroup value={selectedDiet} onValueChange={setSelectedDiet}>
           {dietTypes.map((diet) => (
-            <div key={diet.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+            <Label
+              key={diet.value}
+              htmlFor={diet.value}
+              className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-300"
+            >
               <RadioGroupItem value={diet.value} id={diet.value} className="mt-1" />
               <div className="flex-1">
-                <Label htmlFor={diet.value} className="text-base font-medium cursor-pointer">
-                  {diet.title}
-                </Label>
+                <span className="text-base font-medium">{diet.title}</span>
                 <p className="text-sm text-gray-600 mt-1">{diet.description}</p>
               </div>
-            </div>
+            </Label>
           ))}
         </RadioGroup>
 

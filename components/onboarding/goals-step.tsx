@@ -69,15 +69,17 @@ export default function GoalsStep({ onComplete }: GoalsStepProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <RadioGroup value={selectedGoal} onValueChange={setSelectedGoal}>
           {goals.map((goal) => (
-            <div key={goal.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+            <Label
+              key={goal.value}
+              htmlFor={goal.value}
+              className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-300"
+            >
               <RadioGroupItem value={goal.value} id={goal.value} className="mt-1" />
               <div className="flex-1">
-                <Label htmlFor={goal.value} className="text-base font-medium cursor-pointer">
-                  {goal.title}
-                </Label>
+                <span className="text-base font-medium">{goal.title}</span>
                 <p className="text-sm text-gray-600 mt-1">{goal.description}</p>
               </div>
-            </div>
+            </Label>
           ))}
         </RadioGroup>
 
