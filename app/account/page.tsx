@@ -91,12 +91,26 @@ export default function AccountPage() {
     setError("")
 
     try {
+      // Get the current session to include the access token
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        throw new Error("No valid session found")
+      }
+
       const response = await fetch("/api/delete-account", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
       })
 
       if (!response.ok) {
-        throw new Error("Failed to delete account")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete account")
       }
 
       await supabase.auth.signOut()
