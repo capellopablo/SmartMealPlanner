@@ -33,8 +33,16 @@ export default function Login() {
       setMessage("Your account has been created successfully! You can now sign in with your credentials.")
     }
 
+    if (success === "email_confirmed") {
+      setMessage("Your email has been confirmed successfully! You can now sign in to your account.")
+    }
+
     if (errorParam === "auth_failed") {
       setError("Authentication failed. Please try again.")
+    }
+
+    if (errorParam === "verification_failed") {
+      setError("Email verification failed. Please try again or request a new confirmation email.")
     }
   }, [searchParams])
 
