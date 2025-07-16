@@ -37,6 +37,10 @@ export default function Login() {
       setMessage("Your email has been confirmed successfully! You can now sign in to your account.")
     }
 
+    if (success === "password_updated") {
+      setMessage("Your password has been updated successfully! You can now sign in with your new credentials.")
+    }
+
     if (errorParam === "auth_failed") {
       setError("Authentication failed. Please try again.")
     }
