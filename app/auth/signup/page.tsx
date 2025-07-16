@@ -36,7 +36,9 @@ export default function SignUp() {
 
       if (error) throw error
 
-      setMessage("Check your email for the confirmation link!")
+      setMessage(
+        "Please check your email for a confirmation link to activate your account. You may need to check your spam folder.",
+      )
     } catch (error: any) {
       setError(error.message)
     } finally {
@@ -97,8 +99,8 @@ export default function SignUp() {
           )}
 
           {message && (
-            <Alert>
-              <AlertDescription>{message}</AlertDescription>
+            <Alert className="border-green-200 bg-green-50">
+              <AlertDescription className="text-green-800">{message}</AlertDescription>
             </Alert>
           )}
 

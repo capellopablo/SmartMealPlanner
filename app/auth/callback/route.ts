@@ -9,9 +9,30 @@ export async function GET(request: NextRequest) {
   if (code) {
     const cookieStore = cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-    await supabase.auth.exchangeCodeForSession(code)
+
+    try {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+      if (error) {
+        // If there's an error, redirect to login with error
+        return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=auth_failed`)
+      }
+
+      // Check if this is a new user (first time OAuth login)
+      const isNewUser = data.user && !data.user.email_confirmed_at
+
+      if (isNewUser) {
+        // Redirect to login with success message for new OAuth users
+        return NextResponse.redirect(`${requestUrl.origin}/auth/login?success=account_created`)
+      } else {
+        // Existing user, redirect to dashboard
+        return NextResponse.redirect(`${requestUrl.origin}/dashboard`)
+      }
+    } catch (error) {
+      return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=auth_failed`)
+    }
   }
 
-  // Redirect to dashboard after successful authentication
-  return NextResponse.redirect(`${requestUrl.origin}/dashboard`)
+  // No code provided, redirect to login
+  return NextResponse.redirect(`${requestUrl.origin}/auth/login`)
 }

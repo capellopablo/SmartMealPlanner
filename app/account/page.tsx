@@ -239,8 +239,8 @@ export default function AccountPage() {
                   )}
 
                   {message && (
-                    <Alert>
-                      <AlertDescription>{message}</AlertDescription>
+                    <Alert className="border-green-200 bg-green-50">
+                      <AlertDescription className="text-green-800">{message}</AlertDescription>
                     </Alert>
                   )}
 
