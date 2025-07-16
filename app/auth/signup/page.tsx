@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getSupabaseClient } from "@/lib/supabase"
-import { Chrome, Facebook } from "lucide-react"
+import { Chrome, Facebook, Mail } from "lucide-react"
 
 export default function SignUp() {
   const [email, setEmail] = useState("")
@@ -140,6 +140,7 @@ export default function SignUp() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
+              <Mail className="w-4 h-4 mr-2" />
               {loading ? "Creating Account..." : "Continue with Email"}
             </Button>
           </form>
